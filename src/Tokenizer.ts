@@ -26,6 +26,8 @@ const Spec: Array<[RegExp, Nullable<string>]> = [
   // Symbols, delimiters:
   // -----------------------------------------
   [/^;/, ';'],
+  [/^{/, '{'],
+  [/^}/, '}'],
 
   // Numbers:
   // -----------------------------------------
@@ -71,18 +73,14 @@ export class Tokeninzer {
    * Obtains next token.
    */
   getNextToken(): Nullable<Token> {
-    if (!this.hasMoreToken()) {
-      return null;
-    }
+    if (!this.hasMoreToken()) return null;
 
     const source = this.source.slice(this.cursor);
 
     for (const [pattern, type] of Spec) {
       const value = this.match(pattern, source);
-
       if (value == null) continue;
       if (type == null) return this.getNextToken();
-
       return { type, value };
     }
 
