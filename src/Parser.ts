@@ -40,13 +40,42 @@ export class Parser {
   private Program() {
     return {
       type: 'Program',
-      body: this.NumericLiteral(),
+      body: this.Literal(),
+    };
+  }
+
+  /**
+   * Literal
+   *   : NumericLiteral
+   *   | StringLiteral
+   *   ;
+   */
+  private Literal() {
+    switch (this.lookahead?.type) {
+      case 'NUMBER':
+        return this.NumericLiteral();
+      case 'STRING':
+        return this.StringLiteral();
+    }
+    throw new SyntaxError(`Literal: unexpected literal production`);
+  }
+
+  /**
+   * StringLiteral
+   *   : STRING
+   *   ;
+   */
+  private StringLiteral() {
+    const token = this.eat('STRING');
+    return {
+      type: 'StringLiteral',
+      value: token.value.slice(1, -1),
     };
   }
 
   /**
    * NumericLiteral
-   *   ; NUMBER
+   *   : NUMBER
    *   ;
    */
   private NumericLiteral() {
