@@ -48,6 +48,7 @@ export class Tokeninzer {
 
     const source = this.source.slice(this.cursor);
 
+    // Number:
     if (!Number.isNaN(Number(source[0]))) {
       let number = '';
       while (!Number.isNaN(Number(source[this.cursor]))) {
@@ -57,6 +58,19 @@ export class Tokeninzer {
       return {
         type: 'NUMBER',
         value: number,
+      };
+    }
+
+    // String:
+    if (source[0] === '"') {
+      let s = '';
+      do {
+        s += source[this.cursor++];
+      } while (source[this.cursor] !== '"' && !this.isEOF());
+      s += source[this.cursor++];
+      return {
+        type: 'STRING',
+        value: s,
       };
     }
 
