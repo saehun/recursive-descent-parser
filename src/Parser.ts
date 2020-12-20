@@ -10,14 +10,21 @@ export class Parser {
   parse(source: string) {
     this.source = source;
     //
-    return this.program();
+    return this.Program();
   }
 
   /**
    * Main entry point.
+   *
+   * Program
+   *   ; Numericliteral
+   *   ;
    */
-  program() {
-    return this.numericLiteral();
+  Program() {
+    return {
+      type: 'Program',
+      body: this.NumericLiteral(),
+    };
   }
 
   /**
@@ -25,7 +32,7 @@ export class Parser {
    *   ; NUMBER
    *   ;
    */
-  numericLiteral() {
+  NumericLiteral() {
     return {
       type: 'NumericLiteral',
       value: Number(this.source),

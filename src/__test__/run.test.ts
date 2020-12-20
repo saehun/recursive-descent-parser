@@ -7,8 +7,11 @@ describe('Parser', () => {
     const source = '42';
     const ast = parser.parse(source);
     expect(ast).toEqual({
-      type: 'NumericLiteral',
-      value: 42,
+      type: 'Program',
+      body: {
+        type: 'NumericLiteral',
+        value: 42,
+      },
     });
   });
 });
