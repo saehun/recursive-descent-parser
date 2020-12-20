@@ -14,4 +14,16 @@ describe('Parser', () => {
       },
     });
   });
+
+  it('can parse string', () => {
+    const source = '"hello"';
+    const ast = parser.parse(source);
+    expect(ast).toEqual({
+      type: 'Program',
+      body: {
+        type: 'StringLiteral',
+        value: 'hello',
+      },
+    });
+  });
 });
