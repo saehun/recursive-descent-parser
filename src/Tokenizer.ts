@@ -8,6 +8,31 @@ export type Token = {
 };
 
 /**
+ * Tokenizer spec.
+ */
+const Spec: Array<[RegExp, Nullable<string>]> = [
+  // Whiespace
+  // -----------------------------------------
+  [/^\s+/, null],
+
+  // Single Comment
+  // -----------------------------------------
+  [/^\/\/.*/, null],
+
+  // Multiline Comment
+  // -----------------------------------------
+  [/^\/\*[\s\S]*?\*\//, null],
+
+  // Numbers:
+  // -----------------------------------------
+  [/^\d+/, 'NUMBER'],
+
+  // Strings:
+  // -----------------------------------------
+  [/^['"][^'"]*['"]/, 'STRING'],
+];
+
+/**
  * Tokenizer class
  *
  * Lazily pulls a token from a stream.
@@ -48,32 +73,25 @@ export class Tokeninzer {
 
     const source = this.source.slice(this.cursor);
 
-    // Number:
-    if (!Number.isNaN(Number(source[0]))) {
-      let number = '';
-      while (!Number.isNaN(Number(source[this.cursor]))) {
-        number += source[this.cursor++];
-      }
+    for (const [pattern, type] of Spec) {
+      const value = this.match(pattern, source);
 
-      return {
-        type: 'NUMBER',
-        value: number,
-      };
+      if (value == null) continue;
+      if (type == null) return this.getNextToken();
+
+      return { type, value };
     }
 
-    // String:
-    if (source[0] === '"') {
-      let s = '';
-      do {
-        s += source[this.cursor++];
-      } while (source[this.cursor] !== '"' && !this.isEOF());
-      s += source[this.cursor++];
-      return {
-        type: 'STRING',
-        value: s,
-      };
-    }
+    throw new SyntaxError(`Unexpected token: "${source[0]}"`);
+  }
 
-    return null;
+  private match(pattern: RegExp, source: string): Nullable<string> {
+    const matched = pattern.exec(source);
+    if (matched !== null) {
+      this.cursor += matched[0].length;
+      return matched[0];
+    } else {
+      return null;
+    }
   }
 }

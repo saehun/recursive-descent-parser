@@ -26,4 +26,28 @@ describe('Parser', () => {
       },
     });
   });
+
+  it('can parse string with single quote', () => {
+    const source = `'hello'`;
+    const ast = parser.parse(source);
+    expect(ast).toEqual({
+      type: 'Program',
+      body: {
+        type: 'StringLiteral',
+        value: 'hello',
+      },
+    });
+  });
+
+  it('can ignore whitespace', () => {
+    const source = `  1234   `;
+    const ast = parser.parse(source);
+    expect(ast).toEqual({
+      type: 'Program',
+      body: {
+        type: 'NumericLiteral',
+        value: 1234,
+      },
+    });
+  });
 });
