@@ -1,5 +1,10 @@
 import { Nullable } from './helperType';
 import { Tokeninzer, Token } from './Tokenizer';
+
+type Node = {
+  type: string;
+};
+
 /**
  * Parser: recursive decent implementation.
  */
@@ -50,9 +55,9 @@ export class Parser {
    *   | StatementList Statement
    *   ;
    */
-  private StatementList() {
+  private StatementList(stopLookahead: Nullable<string> = null): Node[] {
     const statementList = [this.Statement()];
-    while (this.lookahead != null) {
+    while (this.lookahead != null && this.lookahead?.type !== stopLookahead) {
       statementList.push(this.Statement());
     }
     return statementList;
@@ -61,10 +66,42 @@ export class Parser {
   /**
    * Statement
    *   : ExpressionStatement
+   *   | BlockStatement
+   *   | EmptyStatement
    *   ;
    */
   private Statement() {
+    if (this.lookahead?.type === ';') return this.EmptyStatement();
+    if (this.lookahead?.type === '{') return this.BlockStatement();
     return this.ExpressionStatement();
+  }
+
+  /**
+   * EmptyStatement
+   *   : ';'
+   *   ;
+   */
+  private EmptyStatement() {
+    this.eat(';');
+    return {
+      type: 'EmptyStatement',
+    };
+  }
+
+  /**
+   * BlockStatement
+   *   : '{' OptStatementList '}'
+   *   ;
+   */
+  private BlockStatement() {
+    this.eat('{');
+    const body = this.lookahead?.type !== '}' ? this.StatementList('}') : [];
+    this.eat('}');
+
+    return {
+      type: 'BlockStatement',
+      body,
+    };
   }
 
   /**
