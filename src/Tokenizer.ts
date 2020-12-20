@@ -25,12 +25,22 @@ export class Tokeninzer {
   }
 
   /**
+   * Whether the tokenizer reached EOF.
+   */
+  private isEOF() {
+    return this.cursor === this.source.length;
+  }
+
+  /**
    * Whether we still have more tokens
    */
-  hasMoreToken(): boolean {
+  private hasMoreToken(): boolean {
     return this.cursor < this.source.length;
   }
 
+  /**
+   * Obtains next token.
+   */
   getNextToken(): Nullable<Token> {
     if (!this.hasMoreToken()) {
       return null;
