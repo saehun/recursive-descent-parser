@@ -211,12 +211,12 @@ export class Parser {
 
   /**
    * AssignmentExpression
-   *   : AdditiveExpression
+   *   : RelationalExpression
    *   | LeftHandSideExpression AssignmentOperator AssignmentExpression
    *   ;
    */
   private AssignmentExpression(): any {
-    const left = this.AdditiveExpression();
+    const left = this.RelationalExpression();
     if (!this.isAssignmentOperator(this.lookahead?.type)) {
       return left;
     }
@@ -282,6 +282,18 @@ export class Parser {
   }
 
   /**
+   * RelationalExpression
+   *   : AdditiveExpression
+   *   | AdditiveExpression RELATIONAL_OPERATOR RelationalExpression
+   *   ;
+   *
+   *  > >= < <=
+   */
+  private RelationalExpression() {
+    return this.BinaryExpression('AdditiveExpression', 'RELATIONAL_OPERATOR');
+  }
+
+  /**
    * AdditiveExpression
    *   : MultiplicativeExpression
    *   | AdditiveExpression ADDITIVE_OPERATOR MultiplicativeExpression
@@ -301,7 +313,10 @@ export class Parser {
     return this.BinaryExpression('PrimaryExpression', 'MULTIPLICATIVE_OPERATOR');
   }
 
-  private BinaryExpression(builderName: 'PrimaryExpression' | 'MultiplicativeExpression', operatorToken: string) {
+  private BinaryExpression(
+    builderName: 'PrimaryExpression' | 'MultiplicativeExpression' | 'AdditiveExpression',
+    operatorToken: string
+  ) {
     let left: any = this[builderName]();
 
     while (this.lookahead?.type === operatorToken) {
