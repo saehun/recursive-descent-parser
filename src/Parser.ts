@@ -124,7 +124,81 @@ export class Parser {
    *   ;
    */
   private Expression() {
-    return this.Literal();
+    return this.AdditiveExpression();
+  }
+
+  /**
+   * AdditiveExpression
+   *   : MultiplicativeExpression
+   *   | AdditiveExpression ADDITIVE_OPERATOR MultiplicativeExpression
+   *   ;
+   */
+  private AdditiveExpression() {
+    let left: any = this.MultiplicativeExpression();
+    while (this.lookahead?.type === 'ADDITIVE_OPERATOR') {
+      const operator = this.eat('ADDITIVE_OPERATOR').value;
+      const right = this.MultiplicativeExpression();
+
+      left = {
+        type: 'BinaryExpression',
+        operator,
+        left,
+        right,
+      };
+    }
+
+    return left;
+  }
+
+  /**
+   * MultiplicativeExpression
+   *   : PrimaryExpression
+   *   | MultiplicativeExpression MULTIPLICATIVE_OPERATOR PrimaryExpression
+   *   ;
+   */
+  private MultiplicativeExpression() {
+    let left: any = this.PrimaryExpression();
+
+    while (this.lookahead?.type === 'MULTIPLICATIVE_OPERATOR') {
+      const operator = this.eat('MULTIPLICATIVE_OPERATOR').value;
+      const right = this.PrimaryExpression();
+
+      left = {
+        type: 'BinaryExpression',
+        operator,
+        left,
+        right,
+      };
+    }
+
+    return left;
+  }
+
+  /**
+   * PrimaryExpression
+   *   : Literal
+   *   | ParenthesizedExpression
+   *   ;
+   */
+  private PrimaryExpression() {
+    switch (this.lookahead?.type) {
+      case '(':
+        return this.ParenthesizedExpression();
+      default:
+        return this.Literal();
+    }
+  }
+
+  /**
+   * ParenthesizedExpression
+   *   : '(' Expression ')'
+   *   ;
+   */
+  private ParenthesizedExpression() {
+    this.eat('(');
+    const expression = this.Expression();
+    this.eat(')');
+    return expression;
   }
 
   /**
