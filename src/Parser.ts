@@ -211,12 +211,12 @@ export class Parser {
 
   /**
    * AssignmentExpression
-   *   : RelationalExpression
+   *   : EqualityExpression
    *   | LeftHandSideExpression AssignmentOperator AssignmentExpression
    *   ;
    */
   private AssignmentExpression(): any {
-    const left = this.RelationalExpression();
+    const left = this.EqualityExpression();
     if (!this.isAssignmentOperator(this.lookahead?.type)) {
       return left;
     }
@@ -282,12 +282,24 @@ export class Parser {
   }
 
   /**
+   * EqualityExpression
+   *   : ReplationalExpression
+   *   | ReplationalExpression EQUALITY_OPERATOR EqualityExpression
+   *   ;
+   *
+   *  ==, !=
+   */
+  private EqualityExpression() {
+    return this.BinaryExpression('RelationalExpression', 'EQUALITY_OPERATOR');
+  }
+
+  /**
    * RelationalExpression
    *   : AdditiveExpression
    *   | AdditiveExpression RELATIONAL_OPERATOR RelationalExpression
    *   ;
    *
-   *  > >= < <=
+   *  >, >=, <, <=
    */
   private RelationalExpression() {
     return this.BinaryExpression('AdditiveExpression', 'RELATIONAL_OPERATOR');
@@ -314,7 +326,7 @@ export class Parser {
   }
 
   private BinaryExpression(
-    builderName: 'PrimaryExpression' | 'MultiplicativeExpression' | 'AdditiveExpression',
+    builderName: 'PrimaryExpression' | 'MultiplicativeExpression' | 'AdditiveExpression' | 'RelationalExpression',
     operatorToken: string
   ) {
     let left: any = this[builderName]();
@@ -354,7 +366,14 @@ export class Parser {
   }
 
   private isLiteral(tokenType?: string) {
-    return tokenType === 'NUMBER' || tokenType === 'STRING';
+    if (tokenType == null) return false;
+    return (
+      tokenType === 'NUMBER' ||
+      tokenType === 'STRING' ||
+      tokenType === 'true' ||
+      tokenType === 'false' ||
+      tokenType === 'null'
+    );
   }
 
   /**
@@ -381,6 +400,12 @@ export class Parser {
         return this.NumericLiteral();
       case 'STRING':
         return this.StringLiteral();
+      case 'true':
+        return this.BooleanLiteral(true);
+      case 'false':
+        return this.BooleanLiteral(false);
+      case 'null':
+        return this.NullLiteral();
     }
     throw new SyntaxError(`Literal: unexpected literal production`);
   }
@@ -408,6 +433,33 @@ export class Parser {
     return {
       type: 'NumericLiteral',
       value: Number(token.value),
+    };
+  }
+
+  /**
+   * BooleanLiteral
+   *   : 'true'
+   *   : 'flase'
+   *   ;
+   */
+  private BooleanLiteral(value: boolean) {
+    this.eat(value ? 'true' : 'false');
+    return {
+      type: 'BooleanLiteral',
+      value,
+    };
+  }
+
+  /**
+   * NullLiteral
+   *   : 'null'
+   *   ;
+   */
+  private NullLiteral() {
+    this.eat('null');
+    return {
+      type: 'NullLiteral',
+      value: null,
     };
   }
 
