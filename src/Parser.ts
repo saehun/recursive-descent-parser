@@ -134,20 +134,7 @@ export class Parser {
    *   ;
    */
   private AdditiveExpression() {
-    let left: any = this.MultiplicativeExpression();
-    while (this.lookahead?.type === 'ADDITIVE_OPERATOR') {
-      const operator = this.eat('ADDITIVE_OPERATOR').value;
-      const right = this.MultiplicativeExpression();
-
-      left = {
-        type: 'BinaryExpression',
-        operator,
-        left,
-        right,
-      };
-    }
-
-    return left;
+    return this.BinaryExpression('MultiplicativeExpression', 'ADDITIVE_OPERATOR');
   }
 
   /**
@@ -157,11 +144,15 @@ export class Parser {
    *   ;
    */
   private MultiplicativeExpression() {
-    let left: any = this.PrimaryExpression();
+    return this.BinaryExpression('PrimaryExpression', 'MULTIPLICATIVE_OPERATOR');
+  }
 
-    while (this.lookahead?.type === 'MULTIPLICATIVE_OPERATOR') {
-      const operator = this.eat('MULTIPLICATIVE_OPERATOR').value;
-      const right = this.PrimaryExpression();
+  private BinaryExpression(builderName: 'PrimaryExpression' | 'MultiplicativeExpression', operatorToken: string) {
+    let left: any = this[builderName]();
+
+    while (this.lookahead?.type === operatorToken) {
+      const operator = this.eat(operatorToken).value;
+      const right = this[builderName]();
 
       left = {
         type: 'BinaryExpression',
