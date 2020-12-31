@@ -59,6 +59,7 @@ const Spec: Array<[RegExp, Nullable<string>]> = [
   // Logical operators: &&, ||
   [/^&&/, 'LOGICAL_AND'],
   [/^\|\|/, 'LOGICAL_OR'],
+  [/^!/, 'LOGICAL_NOT'],
 
   // Strings:
   [/^['"][^'"]*['"]/, 'STRING'],
