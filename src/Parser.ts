@@ -69,13 +69,35 @@ export class Parser {
    *   | BlockStatement
    *   | EmptyStatement
    *   | VariableStatement
+   *   | IfStatement
    *   ;
    */
-  private Statement() {
+  private Statement(): Node {
     if (this.lookahead?.type === ';') return this.EmptyStatement();
     if (this.lookahead?.type === '{') return this.BlockStatement();
     if (this.lookahead?.type === 'let') return this.VariableStatement();
+    if (this.lookahead?.type === 'if') return this.IfStatement();
     return this.ExpressionStatement();
+  }
+
+  /**
+   * IfStatement
+   *   : 'if' '(' Expression ')' Statement
+   *   : 'if' '(' Expression ')' Statement 'else' Statement
+   */
+  private IfStatement() {
+    this.eat('if');
+    this.eat('(');
+    const test = this.Expression();
+    this.eat(')');
+    const consequent = this.Statement();
+    const alternate = this.lookahead?.type === 'else' ? this.eat('else') && this.Statement() : null;
+    return {
+      type: 'IfStatement',
+      test,
+      consequent,
+      alternate,
+    };
   }
 
   /**
