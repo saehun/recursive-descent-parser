@@ -130,7 +130,7 @@ export class Parser {
   /**
    * AssignmentExpression
    *   : AdditiveExpression
-   *   | LeftHandSideExpression ASSIGNMENT_OPERATOR AssignmentExpression
+   *   | LeftHandSideExpression AssignmentOperator AssignmentExpression
    *   ;
    */
   private AssignmentExpression(): any {
