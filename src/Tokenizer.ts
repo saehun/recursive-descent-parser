@@ -11,37 +11,37 @@ export type Token = {
  * Tokenizer spec.
  */
 const Spec: Array<[RegExp, Nullable<string>]> = [
-  // Whiespace
-  // -----------------------------------------
+  // Whiespace:
   [/^\s+/, null],
 
-  // Single Comment
-  // -----------------------------------------
+  // Single Comment:
   [/^\/\/.*/, null],
 
-  // Multiline Comment
-  // -----------------------------------------
+  // Multiline Comment:
   [/^\/\*[\s\S]*?\*\//, null],
 
   // Symbols, delimiters:
-  // -----------------------------------------
   [/^;/, ';'],
   [/^{/, '{'],
   [/^}/, '}'],
   [/^\(/, '('],
   [/^\)/, ')'],
 
-  // Math operators: +, -
-  // -----------------------------------------
-  [/^[+-]/, 'ADDITIVE_OPERATOR'],
-  [/^[*\\]/, 'MULTIPLICATIVE_OPERATOR'],
-
   // Numbers:
-  // -----------------------------------------
   [/^\d+/, 'NUMBER'],
 
+  // Identifiers:
+  [/^\w+/, 'IDENTIFIER'],
+
+  // Assignment operators:
+  [/^=/, 'SIMPLE_ASSIGN'],
+  [/^[-+*/]=/, 'COMPLEX_ASSIGN'],
+
+  // Math operators: +, -
+  [/^[+-]/, 'ADDITIVE_OPERATOR'],
+  [/^[*/]/, 'MULTIPLICATIVE_OPERATOR'],
+
   // Strings:
-  // -----------------------------------------
   [/^['"][^'"]*['"]/, 'STRING'],
 ];
 
