@@ -211,12 +211,12 @@ export class Parser {
 
   /**
    * AssignmentExpression
-   *   : EqualityExpression
+   *   : LogicalOrExpression
    *   | LeftHandSideExpression AssignmentOperator AssignmentExpression
    *   ;
    */
   private AssignmentExpression(): any {
-    const left = this.EqualityExpression();
+    const left = this.LogicalOrExpression();
     if (!this.isAssignmentOperator(this.lookahead?.type)) {
       return left;
     }
@@ -282,6 +282,30 @@ export class Parser {
   }
 
   /**
+   * LogicalOrExpression
+   *   : LogicalAndExpression
+   *   | LogicalAndExpression LOGICAL_OR LogicalOrExpression
+   *   ;
+   *
+   *  &&
+   */
+  private LogicalOrExpression() {
+    return this.LogicalExpression('LogicalAndExpression', 'LOGICAL_OR');
+  }
+
+  /**
+   * LogicalAndExpression
+   *   : EqualityExpression
+   *   | EqualityExpression LOGICAL_AND LogicalAndExpression
+   *   ;
+   *
+   *  &&
+   */
+  private LogicalAndExpression() {
+    return this.LogicalExpression('EqualityExpression', 'LOGICAL_AND');
+  }
+
+  /**
    * EqualityExpression
    *   : ReplationalExpression
    *   | ReplationalExpression EQUALITY_OPERATOR EqualityExpression
@@ -323,6 +347,27 @@ export class Parser {
    */
   private MultiplicativeExpression() {
     return this.BinaryExpression('PrimaryExpression', 'MULTIPLICATIVE_OPERATOR');
+  }
+
+  private LogicalExpression(
+    builderName: 'LogicalOrExpression' | 'LogicalAndExpression' | 'EqualityExpression',
+    operatorToken: string
+  ) {
+    let left: any = this[builderName]();
+
+    while (this.lookahead?.type === operatorToken) {
+      const operator = this.eat(operatorToken).value;
+      const right = this[builderName]();
+
+      left = {
+        type: 'LogicalExpression',
+        operator,
+        left,
+        right,
+      };
+    }
+
+    return left;
   }
 
   private BinaryExpression(
