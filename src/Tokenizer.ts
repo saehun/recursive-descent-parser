@@ -38,6 +38,8 @@ const Spec: Array<[RegExp, Nullable<string>]> = [
   [/^\bwhile\b/, 'while'],
   [/^\bdo\b/, 'do'],
   [/^\bfor\b/, 'for'],
+  [/^\bdef\b/, 'def'],
+  [/^\breturn\b/, 'return'],
 
   // Numbers:
   [/^\d+/, 'NUMBER'],
