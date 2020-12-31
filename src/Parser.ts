@@ -73,11 +73,115 @@ export class Parser {
    *   ;
    */
   private Statement(): Node {
-    if (this.lookahead?.type === ';') return this.EmptyStatement();
-    if (this.lookahead?.type === '{') return this.BlockStatement();
-    if (this.lookahead?.type === 'let') return this.VariableStatement();
-    if (this.lookahead?.type === 'if') return this.IfStatement();
-    return this.ExpressionStatement();
+    switch (this.lookahead?.type) {
+      case ';':
+        return this.EmptyStatement();
+      case '{':
+        return this.BlockStatement();
+      case 'let':
+        return this.VariableStatement();
+      case 'if':
+        return this.IfStatement();
+      case 'while':
+      case 'do':
+      case 'for':
+        return this.IterationStatement();
+      default:
+        return this.ExpressionStatement();
+    }
+  }
+
+  /**
+   * IterationStatement
+   *   : WhileStatement
+   *   | DoWhileStatement
+   *   | ForStatement
+   *   ;
+   */
+  private IterationStatement() {
+    switch (this.lookahead?.type) {
+      case 'while':
+        return this.WhileStatement();
+      case 'do':
+        return this.DoWhileStatement();
+      default:
+        // case 'for':
+        return this.ForStatement();
+    }
+  }
+
+  /**
+   * WhileStatement
+   *   : 'while' '(' Expression ')' Statement
+   *   ;
+   */
+  private WhileStatement() {
+    this.eat('while');
+    this.eat('(');
+    const test = this.Expression();
+    this.eat(')');
+    const body = this.Statement();
+    return {
+      type: 'WhileStatement',
+      test,
+      body,
+    };
+  }
+
+  /**
+   * DoWhileStatement
+   *   : 'do' Statement 'while' '(' Expression ')'
+   *   ;
+   */
+  private DoWhileStatement() {
+    this.eat('do');
+    const body = this.Statement();
+    this.eat('while');
+    this.eat('(');
+    const test = this.Expression();
+    this.eat(')');
+    return {
+      type: 'DoWhileStatement',
+      test,
+      body,
+    };
+  }
+
+  /**
+   * ForStatement
+   *   : 'for' '(' OptForStatementInit ';' OptExpression ';' OptExpression ')' Statement
+   *   ;
+   */
+  private ForStatement() {
+    this.eat('for');
+    this.eat('(');
+    const init = this.lookahead?.type === ';' ? null : this.ForStatementInit();
+    this.eat(';');
+    const test = this.lookahead?.type === ';' ? null : this.Expression();
+    this.eat(';');
+    const update = this.lookahead?.type === ')' ? null : this.Expression();
+    this.eat(')');
+    const body = this.Statement();
+    return {
+      type: 'ForStatement',
+      init,
+      test,
+      update,
+      body,
+    };
+  }
+
+  /**
+   * ForStatementInit
+   *   : VariableStatementInit
+   *   | Expression
+   *   ;
+   */
+  private ForStatementInit() {
+    if (this.lookahead?.type === 'let') {
+      return this.VariableStatementInit();
+    }
+    return this.Expression();
   }
 
   /**
@@ -129,18 +233,26 @@ export class Parser {
   }
 
   /**
+   * VariableStatementInit
+   */
+  private VariableStatementInit() {
+    this.eat('let');
+    const declarations = this.VariableDeclarationList();
+    return {
+      type: 'VariableStatement',
+      declarations,
+    };
+  }
+
+  /**
    * VariableStatement
    *   : 'let' VariableDeclarationList ';'
    *   ;
    */
   private VariableStatement() {
-    this.eat('let');
-    const declarations = this.VariableDeclarationList();
+    const variableStatement = this.VariableStatementInit();
     this.eat(';');
-    return {
-      type: 'VariableStatement',
-      declarations,
-    };
+    return variableStatement;
   }
 
   /**
