@@ -28,6 +28,13 @@ const Spec: Array<[RegExp, Nullable<string>]> = [
   [/^;/, ';'],
   [/^{/, '{'],
   [/^}/, '}'],
+  [/^\(/, '('],
+  [/^\)/, ')'],
+
+  // Math operators: +, -
+  // -----------------------------------------
+  [/^[+-]/, 'ADDITIVE_OPERATOR'],
+  [/^[*\\]/, 'MULTIPLICATIVE_OPERATOR'],
 
   // Numbers:
   // -----------------------------------------
