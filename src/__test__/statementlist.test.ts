@@ -6,22 +6,17 @@ parseTest(
 'hello world';
 `,
   {
-    type: 'Program',
-    body: [
-      {
-        type: 'ExpressionStatement',
-        expression: {
-          type: 'NumericLiteral',
-          value: 42,
-        },
-      },
-      {
-        type: 'ExpressionStatement',
-        expression: {
-          type: 'StringLiteral',
-          value: 'hello world',
-        },
-      },
-    ],
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'NumericLiteral',
+      value: 42,
+    },
+  },
+  {
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'StringLiteral',
+      value: 'hello world',
+    },
   }
 );
