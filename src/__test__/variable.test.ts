@@ -77,3 +77,28 @@ parseTest('declare multiple variable, one has initializer', 'let x, y = 42;', {
     },
   ],
 });
+
+parseTest('declare variable with assignment expression', 'let x = y = 42;', {
+  type: 'VariableStatement',
+  declarations: [
+    {
+      type: 'VariableDeclaration',
+      id: {
+        type: 'Identifier',
+        name: 'x',
+      },
+      init: {
+        type: 'AssignmentExpression',
+        operator: '=',
+        left: {
+          type: 'Identifier',
+          name: 'y',
+        },
+        right: {
+          type: 'NumericLiteral',
+          value: 42,
+        },
+      },
+    },
+  ],
+});
