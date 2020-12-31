@@ -47,6 +47,9 @@ const Spec: Array<[RegExp, Nullable<string>]> = [
   [/^[+-]/, 'ADDITIVE_OPERATOR'],
   [/^[*/]/, 'MULTIPLICATIVE_OPERATOR'],
 
+  // Relational operators: >, >=, <, <=
+  [/^[<>]=?/, 'RELATIONAL_OPERATOR'],
+
   // Strings:
   [/^['"][^'"]*['"]/, 'STRING'],
 ];
