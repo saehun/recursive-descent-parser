@@ -235,7 +235,7 @@ export class Parser {
    *   ;
    */
   private LeftHandSideExpression() {
-    return this.Identifier();
+    return this.PrimaryExpression();
   }
 
   /**
@@ -341,12 +341,12 @@ export class Parser {
 
   /**
    * MultiplicativeExpression
-   *   : PrimaryExpression
-   *   | MultiplicativeExpression MULTIPLICATIVE_OPERATOR PrimaryExpression
+   *   : UnaryExpression
+   *   | MultiplicativeExpression MULTIPLICATIVE_OPERATOR UnaryExpression
    *   ;
    */
   private MultiplicativeExpression() {
-    return this.BinaryExpression('PrimaryExpression', 'MULTIPLICATIVE_OPERATOR');
+    return this.BinaryExpression('UnaryExpression', 'MULTIPLICATIVE_OPERATOR');
   }
 
   private LogicalExpression(
@@ -371,7 +371,12 @@ export class Parser {
   }
 
   private BinaryExpression(
-    builderName: 'PrimaryExpression' | 'MultiplicativeExpression' | 'AdditiveExpression' | 'RelationalExpression',
+    builderName:
+      | 'PrimaryExpression'
+      | 'MultiplicativeExpression'
+      | 'AdditiveExpression'
+      | 'RelationalExpression'
+      | 'UnaryExpression',
     operatorToken: string
   ) {
     let left: any = this[builderName]();
@@ -392,19 +397,49 @@ export class Parser {
   }
 
   /**
+   * UnaryExpression
+   *   : LeftHandSideExpression
+   *   | ADDITIVE_OPERATOR UnaryExpression
+   *   | LOGICAL_NOT UnaryExpression
+   */
+  private UnaryExpression(): any {
+    let operator: string | undefined;
+    switch (this.lookahead?.type) {
+      case 'ADDITIVE_OPERATOR':
+        operator = this.eat('ADDITIVE_OPERATOR').value;
+        break;
+      case 'LOGICAL_NOT':
+        operator = this.eat('LOGICAL_NOT').value;
+        break;
+    }
+    if (operator != null) {
+      return {
+        type: 'UnaryExpression',
+        operator,
+        argument: this.UnaryExpression(),
+      };
+    }
+
+    return this.LeftHandSideExpression();
+  }
+
+  /**
    * PrimaryExpression
    *   : Literal
    *   | ParenthesizedExpression
+   *   | Identifier
    *   | LeftHandSideExpression
    *   ;
    */
-  private PrimaryExpression() {
+  private PrimaryExpression(): Node {
     if (this.isLiteral(this.lookahead?.type)) {
       return this.Literal();
     }
     switch (this.lookahead?.type) {
       case '(':
         return this.ParenthesizedExpression();
+      case 'IDENTIFIER':
+        return this.Identifier();
       default:
         return this.LeftHandSideExpression();
     }
