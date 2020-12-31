@@ -32,6 +32,9 @@ const Spec: Array<[RegExp, Nullable<string>]> = [
   [/^\blet\b/, 'let'],
   [/^\bif\b/, 'if'],
   [/^\belse\b/, 'else'],
+  [/^\btrue\b/, 'true'],
+  [/^\bfalse\b/, 'false'],
+  [/^\bnull\b/, 'null'],
 
   // Numbers:
   [/^\d+/, 'NUMBER'],
@@ -39,7 +42,10 @@ const Spec: Array<[RegExp, Nullable<string>]> = [
   // Identifiers:
   [/^\w+/, 'IDENTIFIER'],
 
-  // Assignment operators:
+  // Equality operators: ==, !=
+  [/^[=!]=/, 'EQUALITY_OPERATOR'],
+
+  // Assignment operators: =, *=, /=, +=, -=
   [/^=/, 'SIMPLE_ASSIGN'],
   [/^[-+*/]=/, 'COMPLEX_ASSIGN'],
 
