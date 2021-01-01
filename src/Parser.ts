@@ -73,6 +73,7 @@ export class Parser {
    *   | IterationStatement
    *   | FunctionDeclaration
    *   | ReturnStatement
+   *   | ClassDeclaration
    *   ;
    */
   private Statement(): Node {
@@ -93,9 +94,33 @@ export class Parser {
         return this.FunctionDeclaration();
       case 'return':
         return this.ReturnStatement();
+      case 'class':
+        return this.ClassDeclaration();
       default:
         return this.ExpressionStatement();
     }
+  }
+
+  /**
+   * ClassDeclaration
+   *   : 'class' Identifier OptClassExtends BlockStatement
+   *   ;
+   */
+  private ClassDeclaration() {
+    this.eat('class');
+    const id = this.Identifier();
+    let superClass = null;
+    if (this.lookahead?.type === 'extends') {
+      this.eat('extends');
+      superClass = this.Identifier();
+    }
+    const body = this.BlockStatement();
+    return {
+      type: 'ClassDeclaration',
+      id,
+      superClass,
+      body,
+    };
   }
 
   /**
@@ -413,6 +438,10 @@ export class Parser {
    *   ;
    */
   private CallMemberExpression() {
+    if (this.lookahead?.type === 'super') {
+      return this.CallExpression(this.Super());
+    }
+
     const member = this.MemberExpression();
 
     if (this.lookahead?.type === '(') {
@@ -699,6 +728,8 @@ export class Parser {
    *   | ParenthesizedExpression
    *   | Identifier
    *   | LeftHandSideExpression
+   *   | ThisExpression
+   *   | NewExpression
    *   ;
    */
   private PrimaryExpression(): Node {
@@ -710,9 +741,50 @@ export class Parser {
         return this.ParenthesizedExpression();
       case 'IDENTIFIER':
         return this.Identifier();
+      case 'this':
+        return this.ThisExpression();
+      case 'new':
+        return this.NewExpression();
       default:
         return this.LeftHandSideExpression();
     }
+  }
+
+  /**
+   * NewExpression
+   *   : 'new' MemberExpression Arguments
+   */
+  private NewExpression() {
+    this.eat('new');
+    return {
+      type: 'NewExpression',
+      callee: this.MemberExpression(),
+      arguments: this.Arguments(),
+    };
+  }
+
+  /**
+   * ThisExpression
+   *   : 'this'
+   *   ;
+   */
+  private ThisExpression() {
+    this.eat('this');
+    return {
+      type: 'ThisExpression',
+    };
+  }
+
+  /**
+   * Super
+   *   : 'super'
+   *   ;
+   */
+  private Super() {
+    this.eat('super');
+    return {
+      type: 'Super',
+    };
   }
 
   private isLiteral(tokenType?: string) {
