@@ -27,6 +27,9 @@ const Spec: Array<[RegExp, Nullable<string>]> = [
   [/^\(/, '('],
   [/^\)/, ')'],
   [/^,/, ','],
+  [/^\./, '.'],
+  [/^\[/, '['],
+  [/^\]/, ']'],
 
   // Keywords:
   [/^\blet\b/, 'let'],
