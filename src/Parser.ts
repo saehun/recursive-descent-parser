@@ -399,11 +399,46 @@ export class Parser {
 
   /**
    * LeftHandSideExpression
-   *   : Identifier
+   *   : MemberExpression
    *   ;
    */
   private LeftHandSideExpression() {
-    return this.PrimaryExpression();
+    return this.MemberExpression();
+  }
+
+  /**
+   * MemberExpression
+   *   : PrimaryExpression
+   *   | MemberExpression '.' Identifier
+   *   | MemberExpression '[' Expression ']'
+   */
+  private MemberExpression() {
+    let object: any = this.PrimaryExpression();
+
+    while (this.lookahead?.type === '.' || this.lookahead?.type === '[') {
+      if (this.lookahead?.type === '.') {
+        this.eat('.');
+        const property = this.Identifier();
+        object = {
+          type: 'MemberExpression',
+          computed: false,
+          object,
+          property,
+        };
+      } else {
+        this.eat('[');
+        const property = this.Expression();
+        this.eat(']');
+        object = {
+          type: 'MemberExpression',
+          computed: true,
+          object,
+          property,
+        };
+      }
+    }
+
+    return object;
   }
 
   /**
@@ -423,7 +458,7 @@ export class Parser {
    * Extra check wthether it's valid assignment target.
    */
   private checkValidAssignmentTarget(node: Node) {
-    if (node.type === 'Identifier') {
+    if (node.type === 'Identifier' || node.type === 'MemberExpression') {
       return node;
     }
     throw new SyntaxError('Invalid left-hand side in assignment expression');
