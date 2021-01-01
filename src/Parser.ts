@@ -399,11 +399,78 @@ export class Parser {
 
   /**
    * LeftHandSideExpression
-   *   : MemberExpression
+   *   : CallMemberExpression
    *   ;
    */
   private LeftHandSideExpression() {
-    return this.MemberExpression();
+    return this.CallMemberExpression();
+  }
+
+  /**
+   * CallMemberExpression
+   *   : MemeberExpression
+   *   | CallExpression
+   *   ;
+   */
+  private CallMemberExpression() {
+    const member = this.MemberExpression();
+
+    if (this.lookahead?.type === '(') {
+      return this.CallExpression(member);
+    }
+
+    return member;
+  }
+
+  /**
+   * CallExpression
+   *   : Callee Arguments
+   *   ;
+   *
+   * Callee
+   *   : MemberExpression
+   *   | CallExpression
+   *   ;
+   */
+  private CallExpression(callee: Node) {
+    let callExpression = {
+      type: 'CallExpression',
+      callee,
+      arguments: this.Arguments(),
+    };
+
+    if (this.lookahead?.type === '(') {
+      callExpression = this.CallExpression(callExpression);
+    }
+
+    return callExpression;
+  }
+
+  /**
+   * Arguments
+   *   : '(' OptArgumentList ')'
+   *   ;
+   */
+  private Arguments() {
+    this.eat('(');
+    const argumentList = this.lookahead?.type === ')' ? [] : this.ArgumentList();
+    this.eat(')');
+    return argumentList;
+  }
+
+  /**
+   * ArgumentList
+   *   : AssignmentExpression
+   *   | ArgumentList ',' AssignmentExpression
+   */
+  private ArgumentList() {
+    const argumentList = [];
+
+    do {
+      argumentList.push(this.AssignmentExpression());
+    } while (this.lookahead?.type === ',' && this.eat(','));
+
+    return argumentList;
   }
 
   /**
